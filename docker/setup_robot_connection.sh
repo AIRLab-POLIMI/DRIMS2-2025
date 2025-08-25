@@ -133,6 +133,7 @@ done
 # === Append to ~/.bashrc if not already present ===
 BASHRC="$HOME/.bashrc"
 EXPORT_LINE='export CYCLONEDDS_URI=$HOME/cyclone_config.xml'
+EXPORT_DDS_TYPE='export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' 
 
 # Check if line already exists
 if ! grep -Fxq "$EXPORT_LINE" "$BASHRC"; then
@@ -147,6 +148,11 @@ if [ "$ROBOT" = "TIAGO robot" ]; then
         echo "$DOMAIN_LINE" >> "$BASHRC"
         echo "✅ Added ROS_DOMAIN_ID=2 to $BASHRC"
     fi
+    if ! grep -Fxq "$EXPORT_DDS_TYPE" "$BASHRC"; then
+        echo "$EXPORT_DDS_TYPE" >> "$BASHRC"
+        echo "✅ Added CYCLONE to $BASHRC"
+    fi
+
 fi
 
 . "$HOME/.bashrc"
