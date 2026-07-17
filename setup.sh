@@ -16,6 +16,19 @@ fi
 echo "Copying $RULES_FILE to $DEST_DIR..."
 sudo cp "$RULES_FILE" "$DEST_DIR"
 
+ROBOTIQ_RULES_FILE="99-robotiq.rules"
+
+# Check if the rules file exists
+if [ ! -f "$ROBOTIQ_RULES_FILE" ]; then
+    echo "Error: $RULES_FILE not found!"
+    exit 1
+fi
+
+# Copy the rules file to /etc/udev/rules.d
+echo "Copying $ROBOTIQ_RULES_FILE to $DEST_DIR..."
+sudo cp "$ROBOTIQ_RULES_FILE" "$DEST_DIR"
+
+
 # Create the group drims2 with GID 42042 if it doesn't exist
 if ! getent group $GROUP_NAME >/dev/null; then
     echo "Creating group $GROUP_NAME with GID $GROUP_ID..."
