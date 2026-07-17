@@ -98,7 +98,7 @@ RUN apt-get update && apt-get install -y ros-humble-rqt ros-humble-rqt-tf-tree
 # Final setup
 USER $USER_NAME
 WORKDIR /home/$USER_NAME/static/drims2_ws/src
-#RUN git clone https://github.com/MerlinLaboratory/udp_to_ros2_bridge.git # Necessary ??
+RUN git clone https://github.com/MerlinLaboratory/udp_to_ros2_bridge.git
 WORKDIR /home/$USER_NAME/static/drims2_ws
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release 
