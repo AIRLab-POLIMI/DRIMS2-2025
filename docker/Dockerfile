@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     ros-humble-behaviortree-cpp* ros-humble-ros-testing freeglut3-dev ros-humble-moveit-resources-* \
     ros-humble-realsense2-camera \
     ros-humble-ur-* \
-    ros-humble-omni-base* ros-humble-play-motion2 ros-humble-diagnostic-aggregator ros-humble-gazebo*\
+    ros-humble-omni-base* ros-humble-play-motion2 ros-humble-diagnostic-aggregator \
     libprotobuf-dev protobuf-compiler ros-humble-tf* \
     ros-humble-rmw-cyclonedds-cpp \
     net-tools iproute2
@@ -46,24 +46,21 @@ RUN mkdir -p /home/$USER_NAME/static/drims2_ws/src
 WORKDIR /home/$USER_NAME/static/drims2_ws/src
 
 # installing Groot
-RUN wget https://s3.us-west-1.amazonaws.com/download.behaviortree.dev/groot2_linux_installer/Groot2-v1.6.1-linux-installer.run
-RUN chmod +x Groot2-v1.6.1-linux-installer.run
-RUN ./Groot2-v1.6.1-linux-installer.run install --root /opt/groot --accept-licenses --default-answer --confirm-command
+RUN wget https://pub-32cef6782a9e411e82222dee82af193e.r2.dev/Groot2-v1.9.0-linux-installer.run
+RUN chmod +x Groot2-v1.9.0-linux-installer.run
+RUN ./Groot2-v1.9.0-linux-installer.run install --root /opt/groot --accept-licenses --default-answer --confirm-command
 RUN ln -s /opt/groot/bin/groot2 /usr/local/bin/groot
 
 # Clone code as root
-RUN git clone https://github.com/CNR-STIIMA-IRAS/drims2_motion_control.git
-RUN vcs import < drims2_motion_control/dependencies.repos
+RUN git clone https://github.com/CNR-STIIMA-IRAS/easy_motion.git
+RUN vcs import < easy_motion/dependencies.repos
 RUN git clone https://github.com/CNR-STIIMA-IRAS/drims2_dice_simulator.git
-RUN git clone https://github.com/CNR-STIIMA-IRAS/drims2_cells.git
-RUN yq 'del(.repositories."abb_libs/abb_librws_2.0", .repositories."abb_libs/abb_omnicore_ros2")' \
-    drims2_cells/deps.repos > drims2_cells/deps.filtered.repos
-RUN vcs import < drims2_cells/deps.filtered.repos
+RUN git clone https://github.com/CNR-STIIMA-IRAS/drims_cells.git
+RUN vcs import < drims_cells/deps.repos
 
-COPY abb_librws_2.0 ./abb_librws_2.0
-COPY abb_omnicore_ros2 ./abb_omnicore_ros2
-
-RUN bash ./abb_librws_2.0/setup_poco_ppa.sh
+WORKDIR /home/$USER_NAME/static/drims2_ws
+RUN rosdep update
+RUN rosdep install --from-paths src --ignore-src -r -y
 
 # Fix ownership of everything
 RUN chown -R $USER_NAME:$GROUP_NAME /home/$USER_NAME
@@ -98,13 +95,13 @@ RUN python3 -m pip install "numpy<2"
 RUN echo "source /home/drims/drims_ws/install/setup.bash" >> ~/.bashrc
 RUN apt-get update && apt-get install -y ros-humble-rqt ros-humble-rqt-tf-tree
 
+# Final setup
 USER $USER_NAME
 WORKDIR /home/$USER_NAME/static/drims2_ws/src
 RUN git clone https://github.com/MerlinLaboratory/udp_to_ros2_bridge.git
 WORKDIR /home/$USER_NAME/static/drims2_ws
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release 
-
 
 WORKDIR /home/$USER_NAME
 
