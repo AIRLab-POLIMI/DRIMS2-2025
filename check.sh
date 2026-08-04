@@ -2,7 +2,7 @@
 
 # Specify the container name
 CONTAINER_NAME="drims2"
-IMAGE_NAME="smentasti/drims2:2025"
+IMAGE_NAME="smentasti/drims2:2026"
 
 # Pull the latest image
 echo "Pulling the latest image: $IMAGE_NAME..."

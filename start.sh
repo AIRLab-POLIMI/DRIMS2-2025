@@ -2,7 +2,7 @@
 
 # Specify the container name
 CONTAINER_NAME="drims2"
-IMAGE_NAME="smentasti/drims2:2025"
+IMAGE_NAME="smentasti/drims2:2026"
 #IMAGE_NAME="my_image"
 
 # Pull the latest image
