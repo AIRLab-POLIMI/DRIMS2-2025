@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 import cv2
 
@@ -18,8 +18,8 @@ class DiceDetector(Node):
 
         # Subscriber
         self.subscription = self.create_subscription(
-            Image,
-            '/oak/rgb/image_raw',
+            CompressedImage,
+            '/oak/rgb/image_raw/compressed',
             self.listener_callback,
             10)
 
@@ -33,7 +33,7 @@ class DiceDetector(Node):
 
     def listener_callback(self, msg):
         # Convert ROS image -> OpenCV
-        frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        frame = self.bridge.compressed_imgmsg_to_cv2(msg, desired_encoding='bgr8')
 
         # Now that you have an opencv object you can work on it. Here we simply draw a circle
         h, w, _ = frame.shape
