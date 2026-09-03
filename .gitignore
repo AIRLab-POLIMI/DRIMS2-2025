@@ -7,3 +7,4 @@ docker/abb_librws_2.0
 docker/abb_omnicore_ros2
 drims_ws/src/solutions/
 bags/
+ros_domain_id
