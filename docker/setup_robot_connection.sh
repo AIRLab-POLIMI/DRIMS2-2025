@@ -2,14 +2,73 @@
 # Generates $HOME/cyclone_config.xml for CycloneDDS based on the detected subnet/interface.
 # POSIX sh compatible.
 
-# ========= CONFIG: set fixed peers per robot here =========
-# Space-separated list of peer IPs per robot.
-UR_2F_PEERS="192.168.254.100"          # UR robots on 192.168.254.x
-TIAGO_PEERS="10.68.0.1"               # Tiago robots on 10.68.0.x (EDIT as needed)
-# ==========================================================
+# ======================== CONFIGURATION ========================
+# Change the subnet prefix or the default host here when needed.
+UR_SUBNET_PREFIX="192.168.254."
+UR_DEFAULT_HOST="100"
+# Format: "cell_number:last_IP_octet". Add or remove entries as needed.
+# Example: adding "5:115" maps cell=5 to 192.168.254.115.
+UR_CELL_HOSTS="1:101 2:102 3:103 4:104"
 
-UR_PFX="192.168.254."
-TIAGO_PFX="10.68.0."
+# TIAGO configuration.
+TIAGO_SUBNET_PREFIX="10.68.0."
+TIAGO_PEERS="10.68.0.1"
+# ===============================================================
+
+usage() {
+  echo "Usage: $0 [cell=N]" >&2
+  echo "       $0 [--cell N]" >&2
+  echo "Configured cells: $UR_CELL_HOSTS" >&2
+}
+
+# Select a cell configured in UR_CELL_HOSTS.
+CELL=""
+CELL_PROVIDED=0
+case "${1-}" in
+  "") ;;
+  cell=*) CELL=${1#cell=}; CELL_PROVIDED=1 ;;
+  --cell=*) CELL=${1#--cell=}; CELL_PROVIDED=1 ;;
+  --cell|cell)
+    CELL=${2-}
+    CELL_PROVIDED=1
+    shift
+    ;;
+  -h|--help) usage; exit 0 ;;
+  *) usage; exit 2 ;;
+esac
+
+if [ "$#" -gt 1 ]; then
+  usage
+  exit 2
+fi
+
+UR_HOST="$UR_DEFAULT_HOST"
+if [ "$CELL_PROVIDED" -eq 1 ]; then
+  case "$CELL" in
+    ""|*[!0-9]*)
+      echo "❌ Invalid cell number: '$CELL'." >&2
+      usage
+      exit 2
+      ;;
+  esac
+
+  UR_HOST=""
+  for cell_mapping in $UR_CELL_HOSTS; do
+    configured_cell=${cell_mapping%%:*}
+    configured_host=${cell_mapping#*:}
+    if [ "$CELL" = "$configured_cell" ]; then
+      UR_HOST=$configured_host
+      break
+    fi
+  done
+
+  if [ -z "$UR_HOST" ]; then
+    echo "❌ Cell $CELL is not configured." >&2
+    usage
+    exit 2
+  fi
+fi
+UR_2F_PEERS="${UR_SUBNET_PREFIX}${UR_HOST}"
 
 out_file="${HOME}/cyclone_config.xml"
 
@@ -34,8 +93,8 @@ render_peers_xml() {
   done
 }
 
-UR_IFACE="$(find_iface_for_prefix "$UR_PFX")"
-TIAGO_IFACE="$(find_iface_for_prefix "$TIAGO_PFX")"
+UR_IFACE="$(find_iface_for_prefix "$UR_SUBNET_PREFIX")"
+TIAGO_IFACE="$(find_iface_for_prefix "$TIAGO_SUBNET_PREFIX")"
 
 ROBOT=""
 IFACE=""
@@ -117,6 +176,7 @@ awk -v iface="$IFACE" -v peers="$PEERS_XML" '
 ' > "$tmp" && mv "$tmp" "$out_file"
 
 echo "✅ Detected connection: $ROBOT on interface '$IFACE'."
+[ -n "$CELL" ] && echo "✅ Selected cell: $CELL (peer $UR_2F_PEERS)."
 echo "✅ CycloneDDS config written to: $out_file"
 
 # --- Connectivity check (ping) ---
