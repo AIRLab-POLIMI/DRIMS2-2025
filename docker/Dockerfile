@@ -114,7 +114,6 @@ RUN source /opt/ros/humble/setup.bash && colcon build --cmake-args -DCMAKE_BUILD
 
 # Add ROS, workspace and Gazebo to bashrc
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
-RUN echo "export ROS_LOCALHOST_ONLY=1" >> ~/.bashrc
 RUN echo "if [ -f /usr/share/gazebo/setup.bash ]; then source /usr/share/gazebo/setup.bash; fi" >> ~/.bashrc
 RUN echo "export LIBGL_ALWAYS_SOFTWARE=1" >> ~/.bashrc
 RUN echo "if [ -f ~/static/drims2_ws/install/setup.bash ]; then source ~/static/drims2_ws/install/setup.bash; fi" >> ~/.bashrc
